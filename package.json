@@ -8,6 +8,7 @@
     "dev": "npm --workspace my-app run dev",
     "build": "npm --workspace my-app run build",
     "lint": "npm --workspace my-app run lint",
-    "preview": "npm --workspace my-app run preview"
+    "preview": "npm --workspace my-app run preview",
+    "test": "npm --workspace my-app run test"
   }
 }
