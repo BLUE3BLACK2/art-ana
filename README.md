@@ -73,4 +73,12 @@ Harga, stok, dan ukuran adalah contoh produk **cetakan tanpa bingkai**, bukan kl
 
 Composer mengelola paket PHP, bukan database. Backend PHP + database bisa menjadi pengembangan berikutnya, tetapi belum diperlukan untuk demonstrasi konsep React ini.
 
-Deployment, tautan portofolio, dan laporan tugas tetap perlu diselesaikan terpisah. Untuk deployment SPA dengan BrowserRouter, hosting perlu mengarahkan URL halaman seperti `/product/1` ke `index.html`.
+## Deployment Vercel
+
+Konfigurasi `vercel.json` mengarahkan URL SPA seperti `/admin/login`, `/admin/artworks/2`, `/product/1`, `/cart`, dan `/checkout` ke `index.html`, sehingga React Router dapat menangani akses langsung dan refresh tanpa 404 dari Vercel. File gambar dan aset build tetap dilayani sebagai file statis.
+
+- Jika **Root Directory** Vercel adalah root repository, konfigurasi `vercel.json` di root menjalankan `npm run build` dengan output `my-app/dist`.
+- Jika **Root Directory** adalah `my-app`, Vercel memakai `my-app/vercel.json` dengan output `dist`.
+- Keduanya menggunakan preset Vite. Setelah push, tunggu deployment commit terbaru berstatus **Ready** (jika integrasi Git aktif), lalu buka `/admin/login` pada domain Vercel. Konfigurasi ini tidak mengubah mekanisme login atau penyimpanan browser.
+
+Tautan portofolio dan laporan tugas tetap perlu diselesaikan terpisah.
