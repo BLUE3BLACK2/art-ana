@@ -1,41 +1,39 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, Info, LayoutDashboard } from "lucide-react";
-import BrandLogo from "./brandlogo";
-
-export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
+import { NavLink } from "react-router-dom";
+import {
+  Frame,
+  Info,
+  LayoutDashboard,
+  MessageSquare,
+  ShoppingBag,
+} from "lucide-react";
+const links = [
+  { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/admin/artworks", label: "Artworks", icon: Frame },
+  { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { to: "/admin/reviews", label: "Reviews", icon: MessageSquare },
+  { to: "/admin/about", label: "About", icon: Info },
+];
+export default function Sidebar() {
   return (
-    <aside
-      className={`${
-        sidebarOpen ? "block" : "hidden"
-      } md:block w-64 shrink-0 border-r`}
-    >
-      <div className="p-4">
-        <Link to="/" aria-label="art-ana home">
-          <BrandLogo />
-        </Link>
-      </div>
-      <nav className="flex flex-col p-4 space-y-2">
-        <Link
-          to="/admin/dashboard"
-          className="inline-link p-2 rounded"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <LayoutDashboard size={16} aria-hidden="true" />
-          Dashboard
-        </Link>
-        <Link
-          to="/admin/about"
-          className="inline-link p-2 rounded"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <Info size={16} aria-hidden="true" />
-          About this prototype
-        </Link>
-        <Link to="/" className="inline-link p-2 rounded">
-          <ArrowLeft size={16} aria-hidden="true" />
-          Back to gallery
-        </Link>
+    <aside className="studio-sidebar">
+      <p className="section-eyebrow">YOUR WORKSPACE</p>
+      <nav aria-label="Admin navigation">
+        {links.map(({ to, label, icon: Icon, end }) => (
+          <NavLink key={to} to={to} end={end}>
+            <Icon size={18} aria-hidden="true" />
+            {label}
+          </NavLink>
+        ))}
       </nav>
+      <div className="studio-sidebar-note">
+        <span className="tiny-label">MADE FOR LEARNING</span>
+        <p>
+          Curate the collection.
+          <br />
+          Keep the stories alive.
+        </p>
+        <small>Changes are saved in this browser only.</small>
+      </div>
     </aside>
   );
 }

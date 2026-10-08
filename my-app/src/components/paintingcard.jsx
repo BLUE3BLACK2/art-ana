@@ -1,15 +1,23 @@
-import { Plus, Star } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { useShop } from "../context/shop";
 import { formatPrice } from "../lib/shop";
 
 // Props painting: satu komponen dapat dipakai untuk seluruh produk katalog.
-export default function PaintingCard({ painting }) {
+export default function PaintingCard({
+  painting,
+  admin = false,
+  onEdit,
+  onDelete,
+}) {
+  const location = useLocation();
   const { addToCart, stockFor, inCart, ratingFor } = useShop();
   const stock = stockFor(painting.id);
   const rating = ratingFor(painting.id);
   return (
-    <article className="collection-card">
+    <article
+      className={`collection-card${admin ? " collection-card-admin" : ""}`}
+    >
       <div
         className="collection-image"
         style={{ "--painting-image": `url("${painting.image}")` }}
@@ -29,7 +37,11 @@ export default function PaintingCard({ painting }) {
         <h3>
           <Link
             className="card-detail-link"
-            to={`/product/${painting.id}`}
+            to={
+              admin
+                ? `/admin/artworks/${painting.id}${location.search}`
+                : `/product/${painting.id}`
+            }
             aria-label={`View details for ${painting.title}`}
           >
             {painting.title}
@@ -51,16 +63,39 @@ export default function PaintingCard({ painting }) {
             <span className="tiny-label">FROM</span>
             <p className="card-price">{formatPrice(painting.price)}</p>
           </div>
-          <button
-            className="icon-button add-button"
-            onClick={() => addToCart(painting.id)}
-            disabled={stock <= inCart(painting.id)}
-            aria-label={`Add ${painting.title} to cart`}
-            title="Add 30 × 40 cm print"
-          >
-            <Plus size={18} aria-hidden="true" />
-          </button>
+          {admin ? (
+            <span className="studio-badge">{stock} in stock</span>
+          ) : (
+            <button
+              className="icon-button add-button"
+              onClick={() => addToCart(painting.id)}
+              disabled={stock <= inCart(painting.id)}
+              aria-label={`Add ${painting.title} to cart`}
+              title="Add 30 × 40 cm print"
+            >
+              <Plus size={18} aria-hidden="true" />
+            </button>
+          )}
         </div>
+        {admin && (
+          <div className="studio-artwork-actions admin-card-actions">
+            <button
+              className="secondary-button"
+              onClick={() => onEdit(painting)}
+              aria-label={`Edit ${painting.title}`}
+            >
+              <Pencil size={14} aria-hidden="true" />
+              Edit artwork
+            </button>
+            <button
+              className="icon-button"
+              onClick={() => onDelete(painting)}
+              aria-label={`Delete ${painting.title}`}
+            >
+              <Trash2 size={16} aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
     </article>
   );

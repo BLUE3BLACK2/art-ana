@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 import Hero from "../../components/hero";
 import PaintingCard from "../../components/paintingcard";
-import { featuredPaintings, paintings } from "../../data/paintings";
 import { useShop } from "../../context/shop";
 
 const initialFilters = {
@@ -13,9 +12,6 @@ const initialFilters = {
   artist: "",
   stock: "",
 };
-const uniqueValues = (key) => [
-  ...new Set(paintings.map((painting) => painting[key])),
-];
 
 function FilterSelect({ label, value, options, onChange }) {
   return (
@@ -38,7 +34,13 @@ export default function Dashboard() {
   const [filters, setFilters] = useState(initialFilters);
   const [sort, setSort] = useState("curated");
   const [showFilters, setShowFilters] = useState(false);
-  const { stockFor, ratingFor } = useShop();
+  const { paintings, stockFor, ratingFor } = useShop();
+  const uniqueValues = (key) => [
+    ...new Set(paintings.map((painting) => painting[key])),
+  ];
+  const featuredPaintings = [1, 5, 7, 13]
+    .map((id) => paintings.find((p) => p.id === id))
+    .filter(Boolean);
   const activeFilters = Object.values(filters).filter(Boolean).length;
   const filterBy = (key, value) =>
     setFilters((previous) => ({ ...previous, [key]: value }));

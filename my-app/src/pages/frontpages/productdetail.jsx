@@ -9,7 +9,7 @@ import {
   Star,
   Truck,
 } from "lucide-react";
-import { paintings, printSizes } from "../../data/paintings";
+import { printSizes } from "../../data/printoptions";
 import { useShop } from "../../context/shop";
 import { formatPrice, unitPrice } from "../../lib/shop";
 import QuantityControl from "../../components/quantitycontrol";
@@ -20,7 +20,7 @@ import NotFound from "./notfound";
 function PaintingDetail({ painting }) {
   const [size, setSize] = useState(painting.sizes[0]);
   const [quantity, setQuantity] = useState(1);
-  const { addToCart, stockFor, inCart, ratingFor } = useShop();
+  const { paintings, addToCart, stockFor, inCart, ratingFor } = useShop();
   const stock = stockFor(painting.id);
   const available = stock - inCart(painting.id);
   const rating = ratingFor(painting.id);
@@ -187,6 +187,7 @@ function PaintingDetail({ painting }) {
 }
 
 export default function ProductDetail() {
+  const { paintings } = useShop();
   const { id } = useParams();
   const painting = paintings.find((entry) => String(entry.id) === id);
   return painting ? (

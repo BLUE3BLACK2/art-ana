@@ -9,6 +9,11 @@ import AdminLayout from "./layouts/adminlayout";
 import AdminDashboard from "./pages/adminpages/admindahsboard";
 import AboutPage from "./pages/adminpages/aboutpage";
 import NotFound from "./pages/frontpages/notfound";
+import AdminLogin from "./pages/adminpages/login";
+import AdminArtworks from "./pages/adminpages/artworks";
+import AdminOrders from "./pages/adminpages/orders";
+import AdminReviews from "./pages/adminpages/reviews";
+import AdminArtworkDetail from "./pages/adminpages/artworkdetail";
 
 export default function App() {
   return (
@@ -24,10 +29,15 @@ export default function App() {
       </Route>
 
       {/* Admin Routes */}
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="about" element={<AboutPage />} />
+        <Route path="artworks" element={<AdminArtworks />} />
+        <Route path="artworks/:id" element={<AdminArtworkDetail />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="reviews" element={<AdminReviews />} />
       </Route>
     </Routes>
   );

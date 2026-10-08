@@ -11,7 +11,6 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { useShop } from "../../context/shop";
-import { paintings } from "../../data/paintings";
 import { formatPrice, sizeLabel } from "../../lib/shop";
 import OrderSummary from "../../components/ordersummary";
 
@@ -40,12 +39,11 @@ function Confirmation({ order }) {
           </time>
         </div>
         {order.items.map((item) => {
-          const painting = paintings.find((p) => p.id === item.id);
           return (
             <div className="receipt-item" key={`${item.id}-${item.size}`}>
-              <img src={painting.image} alt={painting.title} />
+              {item.image && <img src={item.image} alt={item.title} />}
               <div>
-                <strong>{painting.title}</strong>
+                <strong>{item.title}</strong>
                 <span>
                   {sizeLabel(item.size)} · {item.quantity}{" "}
                   {item.quantity === 1 ? "print" : "prints"}

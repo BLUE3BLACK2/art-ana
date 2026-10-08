@@ -97,7 +97,7 @@ test("checkout menghitung total, mengosongkan cart, dan mengurangi stok", () => 
   assert.equal(availableStock(painting, result.state), 1);
   assert.deepEqual(
     Object.keys(result.order).sort(),
-    ["id", "date", "items", "shipping", "total"].sort(),
+    ["id", "date", "items", "shipping", "total", "status"].sort(),
   );
   assert.equal(state.cart.length, 1); // Tidak memutasi state React sebelumnya.
 });

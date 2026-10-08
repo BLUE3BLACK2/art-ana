@@ -25,7 +25,9 @@ export const emptyShop = () => ({
 });
 
 export function availableStock(painting, state) {
-  return Math.max(0, painting.stock - (state.stockUsed[painting.id] || 0));
+  return painting
+    ? Math.max(0, painting.stock - (state.stockUsed[painting.id] || 0))
+    : 0;
 }
 
 export function cartQuantity(cart, id) {
@@ -98,9 +100,9 @@ export function normalizeShopState(value, catalog) {
           order.items.every(
             (item) =>
               item &&
-              catalog.some(
-                (p) => p.id === item.id && p.sizes.includes(item.size),
-              ) &&
+              Number.isSafeInteger(item.id) &&
+              item.id > 0 &&
+              printSizes.some((option) => option.value === item.size) &&
               Number.isInteger(item.quantity) &&
               item.quantity > 0 &&
               Number.isFinite(item.price) &&
@@ -109,7 +111,27 @@ export function normalizeShopState(value, catalog) {
           Number.isFinite(order.total) &&
           Number.isFinite(order.shipping),
       )
-      .slice(0, 50);
+      .slice(0, 50)
+      .map((order) => ({
+        ...order,
+        status: [
+          "Pending",
+          "Processing",
+          "Shipped",
+          "Completed",
+          "Cancelled",
+        ].includes(order.status)
+          ? order.status
+          : "Pending",
+        items: order.items.map((item) => {
+          const artwork = catalog.find((p) => p.id === item.id);
+          return {
+            ...item,
+            title: item.title || artwork?.title || "Removed artwork",
+            image: item.image || artwork?.image || "",
+          };
+        }),
+      }));
   return state;
 }
 
@@ -152,7 +174,12 @@ export function createOrder(state, catalog, id, date) {
       cartQuantity(state.cart, item.id) > availableStock(painting, state)
     )
       return null;
-    items.push({ ...item, price: unitPrice(painting, item.size) });
+    items.push({
+      ...item,
+      title: painting.title,
+      image: painting.image || "",
+      price: unitPrice(painting, item.size),
+    });
     stockUsed[item.id] = (stockUsed[item.id] || 0) + item.quantity;
   }
   const subtotal = items.reduce(
@@ -160,7 +187,14 @@ export function createOrder(state, catalog, id, date) {
     0,
   );
   const shipping = shippingCost(subtotal);
-  const order = { id, date, items, shipping, total: subtotal + shipping };
+  const order = {
+    id,
+    date,
+    items,
+    shipping,
+    total: subtotal + shipping,
+    status: "Pending",
+  };
   return {
     order,
     state: {

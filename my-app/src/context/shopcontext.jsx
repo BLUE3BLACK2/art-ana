@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 import { ShopContext } from "./shop";
-import { paintings } from "../data/paintings";
+import {
+  loadWorkspace,
+  validDemoLogin,
+  saveArtwork,
+  deleteArtwork,
+  changeOrderStatus,
+  moderateReview,
+} from "../lib/admin";
 import {
   addCartItem,
   availableStock,
   cartKey,
   cartQuantity,
   createOrder,
-  emptyShop,
-  normalizeShopState,
   shippingCost,
   unitPrice,
 } from "../lib/shop";
@@ -17,12 +22,9 @@ const STORAGE_KEY = "art-ana-shop-v1";
 
 function loadShop() {
   try {
-    return normalizeShopState(
-      JSON.parse(localStorage.getItem(STORAGE_KEY)),
-      paintings,
-    );
+    return loadWorkspace(JSON.parse(localStorage.getItem(STORAGE_KEY)));
   } catch {
-    return emptyShop();
+    return loadWorkspace(null);
   }
 }
 
@@ -41,9 +43,39 @@ function loadTheme() {
 // Context membagikan keranjang, ulasan, stok simulasi, dan tema ke semua halaman.
 export function ShopProvider({ children }) {
   const [state, setState] = useState(loadShop);
+  const paintings = state.catalog;
+  const [isAdmin, setIsAdmin] = useState(() => {
+    try {
+      return sessionStorage.getItem("art-ana-demo-admin") === "signed-in";
+    } catch {
+      return false;
+    }
+  });
   const [theme, setTheme] = useState(loadTheme);
   const [notice, setNotice] = useState("");
   const [storageError, setStorageError] = useState(false);
+
+  useEffect(() => {
+    function syncBrowserTabs(event) {
+      if (event.key === STORAGE_KEY) {
+        try {
+          const next = loadWorkspace(JSON.parse(event.newValue));
+          setState((previous) =>
+            JSON.stringify(previous) === JSON.stringify(next) ? previous : next,
+          );
+        } catch {
+          /* Ignore incomplete or corrupted external writes. */
+        }
+      }
+      if (
+        event.key === "art-ana-theme" &&
+        ["light", "dark"].includes(event.newValue)
+      )
+        setTheme(event.newValue);
+    }
+    window.addEventListener("storage", syncBrowserTabs);
+    return () => window.removeEventListener("storage", syncBrowserTabs);
+  }, []);
 
   useEffect(() => {
     // Status ini berasal dari kegagalan sistem penyimpanan eksternal, bukan data turunan render.
@@ -174,7 +206,9 @@ export function ShopProvider({ children }) {
   }
 
   function ratingFor(id) {
-    const reviews = state.reviews.filter((review) => review.paintingId === id);
+    const reviews = state.reviews.filter(
+      (review) => review.paintingId === id && !review.hidden,
+    );
     return {
       count: reviews.length,
       average: reviews.length
@@ -187,6 +221,53 @@ export function ShopProvider({ children }) {
   return (
     <ShopContext.Provider
       value={{
+        paintings,
+        isAdmin,
+        loginAdmin: (username, password) => {
+          if (!validDemoLogin(username, password)) return false;
+          setIsAdmin(true);
+          try {
+            sessionStorage.setItem("art-ana-demo-admin", "signed-in");
+          } catch {
+            /* Session only. */
+          }
+          return true;
+        },
+        logoutAdmin: () => {
+          setIsAdmin(false);
+          try {
+            sessionStorage.removeItem("art-ana-demo-admin");
+          } catch {
+            /* Session only. */
+          }
+        },
+        saveArtwork: (draft, id) => {
+          if (!isAdmin) return false;
+          const next = saveArtwork(state, draft, id);
+          if (!next) return false;
+          setState(next);
+          setNotice(id ? "Artwork updated." : "Artwork added to the gallery.");
+          return true;
+        },
+        deleteArtwork: (id) => {
+          if (!isAdmin) return;
+          setState((previous) => deleteArtwork(previous, id));
+          setNotice("Artwork deleted. Existing order records have been kept.");
+        },
+        changeOrderStatus: (id, status) => {
+          if (!isAdmin) return;
+          setState((previous) => changeOrderStatus(previous, id, status));
+          setNotice("Order status updated. Stock is unchanged.");
+        },
+        moderateReview: (id, action) => {
+          if (!isAdmin) return;
+          setState((previous) => moderateReview(previous, id, action));
+          setNotice(
+            action === "delete"
+              ? "Review deleted."
+              : "Review visibility updated.",
+          );
+        },
         theme,
         toggleTheme: () =>
           setTheme((value) => (value === "light" ? "dark" : "light")),

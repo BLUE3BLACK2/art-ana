@@ -7,7 +7,7 @@ export default function Reviews({ painting }) {
   const [rating, setRating] = useState(5);
   const [error, setError] = useState("");
   const productReviews = reviews.filter(
-    (review) => review.paintingId === painting.id,
+    (review) => review.paintingId === painting.id && !review.hidden,
   );
   const summary = ratingFor(painting.id);
   function submitReview(event) {
